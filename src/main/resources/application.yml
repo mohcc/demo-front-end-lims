@@ -1,0 +1,13 @@
+server:
+  port : 9090
+  
+openhie:
+    shared-health-record:
+        url: http://197.221.242.150:10343/lims-fhir/
+        username: mohcc-lims
+        password: MiMLS$421^KrL!
+        
+        
+            
+        
+      
