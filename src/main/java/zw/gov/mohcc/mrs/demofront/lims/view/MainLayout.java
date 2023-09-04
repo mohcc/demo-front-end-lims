@@ -1,4 +1,4 @@
-package zw.gov.mohcc.mrs.demofront.lims;
+package zw.gov.mohcc.mrs.demofront.lims.view;
 
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
