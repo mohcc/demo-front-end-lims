@@ -1,11 +1,18 @@
 package zw.gov.mohcc.mrs.demofront.lims.service;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.text.WordUtils;
 import org.hl7.fhir.r4.model.Task;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import zw.gov.mohcc.mrs.fhir.lims.OrderReceiveConfirmer;
+import zw.gov.mohcc.mrs.fhir.lims.OrderRejecter;
 import zw.gov.mohcc.mrs.fhir.lims.OrdersRetriever;
+import zw.gov.mohcc.mrs.fhir.lims.entities.RejectionReason;
 import zw.gov.mohcc.mrs.fhir.lims.entities.Sample;
 import zw.gov.mohcc.mrs.fhir.lims.translators.TaskSampleTranslator;
 
@@ -46,6 +53,26 @@ public class SampleService {
 
         System.out.println("Finished converting and fetching samples ");
 
+    }
+
+    @Async
+    public CompletableFuture<Sample> confirmReceipt(Sample sample) {
+        CompletableFuture<Sample> completableFuture = new CompletableFuture<>();
+        String taskId = sample.getClientOrderNumber();
+        OrderReceiveConfirmer.confirmTaskReceived(taskId);
+        sample.setStatus(WordUtils.capitalizeFully(Task.TaskStatus.RECEIVED.name()));
+        completableFuture.complete(sample);
+        return completableFuture;
+    }
+
+    @Async
+    public CompletableFuture<Sample> rejectOrder(Sample sample, Collection<RejectionReason> rejectionReasons) {
+        CompletableFuture<Sample> completableFuture = new CompletableFuture<>();
+        String taskId = sample.getClientOrderNumber();
+        OrderRejecter.rejectOrder(taskId, rejectionReasons);
+        sample.setStatus(WordUtils.capitalizeFully(Task.TaskStatus.REJECTED.name()));
+        completableFuture.complete(sample);
+        return completableFuture;
     }
 
 }

@@ -4,6 +4,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.RouterLink;
@@ -14,7 +15,8 @@ import zw.gov.mohcc.mrs.fhir.lims.entities.LimsPatient;
 import zw.gov.mohcc.mrs.fhir.lims.entities.Sample;
 import zw.gov.mohcc.mrs.fhir.lims.entities.SampleType;
 
-@Route("")
+@PageTitle("Samples")
+@Route(value="", layout = MainLayout.class)
 public class SampleListView extends VerticalLayout {
 
     private final SampleRepository sampleRepository;
@@ -47,11 +49,6 @@ public class SampleListView extends VerticalLayout {
     private void configureGrid() {
         grid.addClassName("sample-grid");
         grid.setSizeFull();
-
-        grid.removeColumnByKey("patient");
-        grid.removeColumnByKey("clientOrderNumber");
-        grid.removeColumnByKey("client");
-        grid.removeColumnByKey("sampleType");
 
         grid.setColumns(
                 "clientSampleId",
