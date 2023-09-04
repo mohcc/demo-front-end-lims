@@ -14,12 +14,22 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import java.util.ArrayList;
 import java.util.List;
 import org.hl7.fhir.r4.model.Task;
 import zw.gov.mohcc.mrs.demofront.lims.service.SampleRepository;
 import zw.gov.mohcc.mrs.demofront.lims.service.SampleService;
+import zw.gov.mohcc.mrs.fhir.lims.entities.AnalysisService;
+import zw.gov.mohcc.mrs.fhir.lims.entities.Instrument;
+import zw.gov.mohcc.mrs.fhir.lims.entities.LabAnalysis;
+import zw.gov.mohcc.mrs.fhir.lims.entities.LabContact;
+import zw.gov.mohcc.mrs.fhir.lims.entities.Method;
 import zw.gov.mohcc.mrs.fhir.lims.entities.RejectionReason;
 import zw.gov.mohcc.mrs.fhir.lims.entities.Sample;
+import zw.gov.mohcc.mrs.fhir.lims.util.AnalysisServiceRepository;
+import zw.gov.mohcc.mrs.fhir.lims.util.InstrumentRepository;
+import zw.gov.mohcc.mrs.fhir.lims.util.LabContactRepository;
+import zw.gov.mohcc.mrs.fhir.lims.util.MethodRepository;
 import zw.gov.mohcc.mrs.fhir.lims.util.RejectionReasonRepository;
 
 @PageTitle("Sample")
@@ -32,12 +42,17 @@ public class SampleView extends VerticalLayout implements BeforeEnterObserver {
     private final SampleService sampleService;
 
     private final Button confirmReceiptBtn = new Button("Confirm Receipt");
+    private final Button rejectBtn = new Button("Reject");
+    private final Button resultBtn = new Button("Add Lab Analysis");
     private final ProgressBar progressBar = new ProgressBar();
     private final Span statusSpan = new Span();
 
     private final VerticalLayout sampleViewSection = new VerticalLayout();
     private RejectionForm rejectionForm;
+    private LabAnalysisForm labAnalysisForm;
     private final VerticalLayout formSection = new VerticalLayout();
+    private final LabAnalysisGrid labAnalysisGrid = new LabAnalysisGrid();
+    private final RejectionReasonGrid rejectionReasonGrid=new RejectionReasonGrid();
 
     public SampleView(SampleRepository sampleRepository, SampleService sampleService) {
         this.sampleRepository = sampleRepository;
@@ -76,7 +91,8 @@ public class SampleView extends VerticalLayout implements BeforeEnterObserver {
 
     private void configureFormSection() {
         configureSampleRejectionForm();
-        formSection.add(rejectionForm);
+        configureLabAnalyisForm();
+        formSection.add(rejectionForm, labAnalysisForm);
         formSection.setWidth("30em");
 
     }
@@ -88,8 +104,36 @@ public class SampleView extends VerticalLayout implements BeforeEnterObserver {
         rejectionForm.addCloseListener(e -> closeFormSection());
     }
 
+    private void configureLabAnalyisForm() {
+        List<AnalysisService> analysisServices = AnalysisServiceRepository.getAnalysisServices();
+        List<LabContact> labContacts = LabContactRepository.getLabContacts();
+        List<Instrument> instruments = InstrumentRepository.getInstruments();
+        List<Method> methods = MethodRepository.getMethods();
+        labAnalysisForm = new LabAnalysisForm(labContacts, instruments, analysisServices, methods);
+        labAnalysisForm.addSaveListener(this::saveLabAnalysis);
+        labAnalysisForm.addCloseListener(e -> closeFormSection());
+
+    }
+
     private void closeFormSection() {
         this.formSection.setVisible(false);
+    }
+
+    private void saveLabAnalysis(LabAnalysisForm.SaveEvent event) {
+        UI ui = UI.getCurrent();
+        LabAnalysis labAnalysis = event.getLabAnalysis();
+        if (sample.getLabAnalyses() == null) {
+            sample.setLabAnalyses(new ArrayList<>());
+        }
+
+        sample.getLabAnalyses().add(labAnalysis);
+
+        labAnalysisForm.success();
+
+        labAnalysisGrid.setItems(sample.getLabAnalyses());
+
+        formSection.setVisible(false);
+
     }
 
     private void rejectSample(RejectionForm.SaveEvent event) {
@@ -98,12 +142,15 @@ public class SampleView extends VerticalLayout implements BeforeEnterObserver {
             ui.access(() -> {
                 showNotification("Sample rejected successfully.");
                 statusSpan.setText(sample.getStatus());
-                rejectionForm.postSuccess();
+                rejectionReasonGrid.setItems(sample.getRejectionReasons());
+                toggleVisibility();
+                rejectionForm.success();
+                closeFormSection();
             });
 
         }).handle((res, ex) -> {
             ui.access(() -> {
-                rejectionForm.postFailure();
+                rejectionForm.error();
             });
 
             return res;
@@ -114,10 +161,25 @@ public class SampleView extends VerticalLayout implements BeforeEnterObserver {
         progressBar.setIndeterminate(true);
         progressBar.setVisible(false);
         statusSpan.setText(sample.getStatus());
-        confirmReceiptBtn.setEnabled(sample.getStatus().equalsIgnoreCase(Task.TaskStatus.REQUESTED.name()));
+
+        formSection.setVisible(false);
 
         confirmReceiptBtn.addClickListener(click -> {
             confirmReceipt();
+        });
+
+        rejectBtn.addClickListener(click -> {
+            formSection.setVisible(true);
+            rejectionForm.setVisible(true);
+            rejectionForm.clearSelectedItems();
+            labAnalysisForm.setVisible(false);
+        });
+
+        resultBtn.addClickListener(click -> {
+            formSection.setVisible(true);
+            rejectionForm.setVisible(false);
+            labAnalysisForm.setVisible(true);
+            labAnalysisForm.setLabAnalysis(new LabAnalysis());
         });
 
         sampleViewSection.add(new H1("Sample:: " + sample.getClientOrderNumber()));
@@ -125,10 +187,20 @@ public class SampleView extends VerticalLayout implements BeforeEnterObserver {
         sampleViewSection.add(progressBar);
 
         HorizontalLayout actionSection = new HorizontalLayout(
-                confirmReceiptBtn
+                confirmReceiptBtn, rejectBtn, resultBtn
         );
         actionSection.setDefaultVerticalComponentAlignment(Alignment.BASELINE);
         sampleViewSection.add(actionSection);
+
+        labAnalysisGrid.setItems(sample.getLabAnalyses());
+        
+        rejectionReasonGrid.setItems(sample.getRejectionReasons());
+
+        toggleVisibility();
+
+        sampleViewSection.add(labAnalysisGrid);
+        
+        sampleViewSection.add(rejectionReasonGrid);
     }
 
     private void confirmReceipt() {
@@ -164,6 +236,14 @@ public class SampleView extends VerticalLayout implements BeforeEnterObserver {
         notification.setDuration(3000);
         notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
         notification.open();
+    }
+
+    private void toggleVisibility() {
+        confirmReceiptBtn.setEnabled(sample.getStatus().equalsIgnoreCase(Task.TaskStatus.REQUESTED.name()));
+        rejectBtn.setEnabled(sample.getStatus().equalsIgnoreCase(Task.TaskStatus.RECEIVED.name()));
+        resultBtn.setEnabled(sample.getStatus().equalsIgnoreCase(Task.TaskStatus.RECEIVED.name()));
+        labAnalysisGrid.setVisible(sample.getLabAnalyses() != null && !sample.getLabAnalyses().isEmpty());
+        rejectionReasonGrid.setVisible(sample.getRejectionReasons()!=null && !sample.getRejectionReasons().isEmpty());
     }
 
     @Override

@@ -1,5 +1,6 @@
 package zw.gov.mohcc.mrs.demofront.lims.service;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import zw.gov.mohcc.mrs.fhir.lims.OrderReceiveConfirmer;
 import zw.gov.mohcc.mrs.fhir.lims.OrderRejecter;
 import zw.gov.mohcc.mrs.fhir.lims.OrdersRetriever;
+import zw.gov.mohcc.mrs.fhir.lims.entities.LabAnalysis;
 import zw.gov.mohcc.mrs.fhir.lims.entities.RejectionReason;
 import zw.gov.mohcc.mrs.fhir.lims.entities.Sample;
 import zw.gov.mohcc.mrs.fhir.lims.translators.TaskSampleTranslator;
@@ -71,6 +73,16 @@ public class SampleService {
         String taskId = sample.getClientOrderNumber();
         OrderRejecter.rejectOrder(taskId, rejectionReasons);
         sample.setStatus(WordUtils.capitalizeFully(Task.TaskStatus.REJECTED.name()));
+        sample.setRejectionReasons(new ArrayList<>(rejectionReasons));
+        completableFuture.complete(sample);
+        return completableFuture;
+    }
+    
+    @Async
+    public CompletableFuture<Sample> submitResults(Sample sample, List<LabAnalysis> labAnalysisList) {
+        CompletableFuture<Sample> completableFuture = new CompletableFuture<>();
+        String taskId = sample.getClientOrderNumber();        
+        sample.setStatus(WordUtils.capitalizeFully(Task.TaskStatus.COMPLETED.name()));
         completableFuture.complete(sample);
         return completableFuture;
     }

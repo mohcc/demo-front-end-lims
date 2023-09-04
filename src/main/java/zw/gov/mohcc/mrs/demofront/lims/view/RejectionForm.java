@@ -3,7 +3,6 @@ package zw.gov.mohcc.mrs.demofront.lims.view;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.H2;
@@ -15,6 +14,7 @@ import com.vaadin.flow.component.progressbar.ProgressBar;
 import com.vaadin.flow.data.selection.MultiSelectionEvent;
 import com.vaadin.flow.shared.Registration;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.hl7.fhir.r4.model.Task;
@@ -80,16 +80,20 @@ public class RejectionForm extends VerticalLayout {
         return actionSection;
     }
 
-    public void postSuccess() {
+    public void success() {
         rejectionButton.setEnabled(false);
         listBox.setEnabled(false);
         progressBar.setVisible(false);
     }
 
-    public void postFailure() {
+    public void error() {
         rejectionButton.setEnabled(!listBox.getSelectedItems().isEmpty() && sample.getStatus().equalsIgnoreCase(Task.TaskStatus.RECEIVED.name()));
         listBox.setEnabled(sample.getStatus().equalsIgnoreCase(Task.TaskStatus.RECEIVED.name()));
         progressBar.setVisible(false);
+    }
+    
+    public void clearSelectedItems(){
+        listBox.setValue(new HashSet<>());
     }
 
     // Events
