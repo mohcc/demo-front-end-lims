@@ -1,5 +1,6 @@
 package zw.gov.mohcc.mrs.demofront.lims.view;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.H1;
@@ -11,15 +12,18 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.progressbar.ProgressBar;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
+import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteParameters;
-import com.vaadin.flow.router.RouterLink;
+import java.util.List;
 import org.hl7.fhir.r4.model.Task;
 import zw.gov.mohcc.mrs.demofront.lims.service.SampleRepository;
 import zw.gov.mohcc.mrs.demofront.lims.service.SampleService;
+import zw.gov.mohcc.mrs.fhir.lims.entities.RejectionReason;
 import zw.gov.mohcc.mrs.fhir.lims.entities.Sample;
+import zw.gov.mohcc.mrs.fhir.lims.util.RejectionReasonRepository;
 
-@Route("sample/:clientOrderNumber?/view")
+@PageTitle("Sample")
+@Route(value = "sample/:clientOrderNumber?/view", layout = MainLayout.class)
 public class SampleView extends VerticalLayout implements BeforeEnterObserver {
 
     private String clientOrderNumber;
@@ -31,8 +35,9 @@ public class SampleView extends VerticalLayout implements BeforeEnterObserver {
     private final ProgressBar progressBar = new ProgressBar();
     private final Span statusSpan = new Span();
 
-    private final RouterLink rejectSampleLink = new RouterLink();
-    private final RouterLink allSamplesLink = new RouterLink("All Samples", SampleListView.class);
+    private final VerticalLayout sampleViewSection = new VerticalLayout();
+    private RejectionForm rejectionForm;
+    private final VerticalLayout formSection = new VerticalLayout();
 
     public SampleView(SampleRepository sampleRepository, SampleService sampleService) {
         this.sampleRepository = sampleRepository;
@@ -42,34 +47,88 @@ public class SampleView extends VerticalLayout implements BeforeEnterObserver {
 
     private void postInitComponents() {
         if (sample != null) {
-            rejectSampleLink.setText("Reject Sample");
-            rejectSampleLink.setRoute(SampleRejectionForm.class, new RouteParameters("clientOrderNumber", clientOrderNumber));
-            progressBar.setIndeterminate(true);
-            progressBar.setVisible(false);
-            statusSpan.setText(sample.getStatus());
-            confirmReceiptBtn.setEnabled(sample.getStatus().equalsIgnoreCase(Task.TaskStatus.REQUESTED.name()));
-            rejectSampleLink.setEnabled(sample.getStatus().equalsIgnoreCase(Task.TaskStatus.RECEIVED.name()));
-            confirmReceiptBtn.addClickListener(click -> {
-                confirmReceipt();
-            });
-
-            add(new H1("Sample:: " + sample.getClientOrderNumber()));
-            add(statusSpan);
-            add(progressBar);
-            add();
-            
-            HorizontalLayout actionSection=new HorizontalLayout(
-                    confirmReceiptBtn,
-                    rejectSampleLink,
-                    allSamplesLink
-            );
-            actionSection.setDefaultVerticalComponentAlignment(Alignment.BASELINE);
-            add(actionSection);
+            setSizeFull();
+            configureSampleViewSection();
+            configureFormSection();
+            add(getToolBar(), getContent());
 
         } else {
             add(new H1("Sample not found"));
         }
 
+    }
+
+    private Component getContent() {
+        HorizontalLayout content = new HorizontalLayout(sampleViewSection, formSection);
+        content.setFlexGrow(2, sampleViewSection);
+        content.setFlexGrow(1, formSection);
+        content.addClassName("content");
+        content.setSizeFull();
+        return content;
+
+    }
+
+    private Component getToolBar() {
+        VerticalLayout toolBar = new VerticalLayout();
+        toolBar.add(new H1("Sample"));
+        return toolBar;
+    }
+
+    private void configureFormSection() {
+        configureSampleRejectionForm();
+        formSection.add(rejectionForm);
+        formSection.setWidth("30em");
+
+    }
+
+    private void configureSampleRejectionForm() {
+        List<RejectionReason> rejectionReasons = RejectionReasonRepository.getRejectionReasons();
+        rejectionForm = new RejectionForm(sample, rejectionReasons);
+        rejectionForm.addSaveListener(this::rejectSample);
+        rejectionForm.addCloseListener(e -> closeFormSection());
+    }
+
+    private void closeFormSection() {
+        this.formSection.setVisible(false);
+    }
+
+    private void rejectSample(RejectionForm.SaveEvent event) {
+        UI ui = UI.getCurrent();
+        sampleService.rejectOrder(event.getSample(), event.getRejectionReasons()).thenAccept(result -> {
+            ui.access(() -> {
+                showNotification("Sample rejected successfully.");
+                statusSpan.setText(sample.getStatus());
+                rejectionForm.postSuccess();
+            });
+
+        }).handle((res, ex) -> {
+            ui.access(() -> {
+                rejectionForm.postFailure();
+            });
+
+            return res;
+        });
+    }
+
+    private void configureSampleViewSection() {
+        progressBar.setIndeterminate(true);
+        progressBar.setVisible(false);
+        statusSpan.setText(sample.getStatus());
+        confirmReceiptBtn.setEnabled(sample.getStatus().equalsIgnoreCase(Task.TaskStatus.REQUESTED.name()));
+
+        confirmReceiptBtn.addClickListener(click -> {
+            confirmReceipt();
+        });
+
+        sampleViewSection.add(new H1("Sample:: " + sample.getClientOrderNumber()));
+        sampleViewSection.add(statusSpan);
+        sampleViewSection.add(progressBar);
+
+        HorizontalLayout actionSection = new HorizontalLayout(
+                confirmReceiptBtn
+        );
+        actionSection.setDefaultVerticalComponentAlignment(Alignment.BASELINE);
+        sampleViewSection.add(actionSection);
     }
 
     private void confirmReceipt() {
@@ -91,12 +150,10 @@ public class SampleView extends VerticalLayout implements BeforeEnterObserver {
         showNotification("Receipt of this sample done successfully.");
         statusSpan.setText(sample.getStatus());
         progressBar.setVisible(false);
-        rejectSampleLink.setEnabled(sample.getStatus().equalsIgnoreCase(Task.TaskStatus.RECEIVED.name()));
     }
 
     private void afterFailedReceipt() {
         confirmReceiptBtn.setEnabled(sample.getStatus().equalsIgnoreCase(Task.TaskStatus.REQUESTED.name()));
-        rejectSampleLink.setEnabled(sample.getStatus().equalsIgnoreCase(Task.TaskStatus.RECEIVED.name()));
         progressBar.setVisible(false);
         Notification.show("Failed to confirm receipt of this sample");
     }
