@@ -33,10 +33,21 @@ public class MainLayout extends AppLayout {
     private void createDrawer() {
 
         RouterLink sampleListView = new RouterLink("Samples", SampleListView.class);
+        RouterLink labContactListView = new RouterLink("Lab Contacts", LabContactListView.class);
+        RouterLink analysisServiceListView = new RouterLink("Analysis Services", AnalysisServiceListView.class);
+        RouterLink methodListView = new RouterLink("Methods", MethodListView.class);
+        RouterLink instrumentListView = new RouterLink("Instruments", InstrumentListView.class);
+        RouterLink rejectionReasonListView = new RouterLink("Rejection reasons", RejectionReasonListView.class);
+
         sampleListView.setHighlightCondition(HighlightConditions.sameLocation());
-        
-        addToDrawer(new VerticalLayout(sampleListView));
-        
+
+        addToDrawer(new VerticalLayout(sampleListView,
+                labContactListView,
+                analysisServiceListView,
+                methodListView,
+                instrumentListView,
+                rejectionReasonListView
+        ));
 
     }
 

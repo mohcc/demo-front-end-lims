@@ -94,6 +94,7 @@ public class RejectionForm extends VerticalLayout {
     
     public void clearSelectedItems(){
         listBox.setValue(new HashSet<>());
+        listBox.setEnabled(sample.getStatus().equalsIgnoreCase(Task.TaskStatus.RECEIVED.name()));
     }
 
     // Events

@@ -12,6 +12,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import zw.gov.mohcc.mrs.fhir.lims.OrderReceiveConfirmer;
 import zw.gov.mohcc.mrs.fhir.lims.OrderRejecter;
+import zw.gov.mohcc.mrs.fhir.lims.OrderResultIssuer;
 import zw.gov.mohcc.mrs.fhir.lims.OrdersRetriever;
 import zw.gov.mohcc.mrs.fhir.lims.entities.LabAnalysis;
 import zw.gov.mohcc.mrs.fhir.lims.entities.RejectionReason;
@@ -79,9 +80,9 @@ public class SampleService {
     }
     
     @Async
-    public CompletableFuture<Sample> submitResults(Sample sample, List<LabAnalysis> labAnalysisList) {
+    public CompletableFuture<Sample> publish(Sample sample) {
         CompletableFuture<Sample> completableFuture = new CompletableFuture<>();
-        String taskId = sample.getClientOrderNumber();        
+        OrderResultIssuer.publishResults(sample);
         sample.setStatus(WordUtils.capitalizeFully(Task.TaskStatus.COMPLETED.name()));
         completableFuture.complete(sample);
         return completableFuture;

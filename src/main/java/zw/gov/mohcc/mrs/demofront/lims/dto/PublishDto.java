@@ -6,7 +6,7 @@ import lombok.Data;
 import zw.gov.mohcc.mrs.fhir.lims.entities.LabContact;
 
 @Data
-public class SubmissionDto {
+public class PublishDto {
     
     @NotNull
     private LabContact submitter;

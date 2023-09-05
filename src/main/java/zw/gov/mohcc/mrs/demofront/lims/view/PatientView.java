@@ -9,7 +9,7 @@ import zw.gov.mohcc.mrs.demofront.lims.service.SampleRepository;
 import zw.gov.mohcc.mrs.fhir.lims.entities.LimsPatient;
 import zw.gov.mohcc.mrs.fhir.lims.entities.Sample;
 
-@Route("sample/:clientOrderNumber?/patient/view")
+@Route(value="sample/:clientOrderNumber?/patient/view", layout = MainLayout.class)
 public class PatientView extends VerticalLayout implements BeforeEnterObserver {
 
     private String clientOrderNumber;
