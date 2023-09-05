@@ -228,7 +228,9 @@ public class SampleView extends VerticalLayout implements BeforeEnterObserver {
 
         sampleViewSection.add(new H4("Client Order #:: " + sample.getClientOrderNumber()));
         sampleViewSection.add(new H5("Client Sample Id:: " + sample.getClientSampleId()));
-        
+        sampleViewSection.add(new H5("Sample template:: " + (sample.getSampleTemplate() != null ? sample.getSampleTemplate().getTitle() : "")));
+        sampleViewSection.add(new H5("Sample type:: " + (sample.getSampleType() != null ? sample.getSampleType().getTitle() : "")));
+
         sampleViewSection.add(statusSpan);
         sampleViewSection.add(progressBar);
 
@@ -253,7 +255,7 @@ public class SampleView extends VerticalLayout implements BeforeEnterObserver {
             ui.access(() -> {
                 updateStateComponents();
                 afterSuccessfulReceipt();
-                
+
             });
         }).handle((res, ex) -> {
             updateStateComponents();

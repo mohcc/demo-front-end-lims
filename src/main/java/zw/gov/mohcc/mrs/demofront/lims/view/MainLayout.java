@@ -38,6 +38,8 @@ public class MainLayout extends AppLayout {
         RouterLink methodListView = new RouterLink("Methods", MethodListView.class);
         RouterLink instrumentListView = new RouterLink("Instruments", InstrumentListView.class);
         RouterLink rejectionReasonListView = new RouterLink("Rejection reasons", RejectionReasonListView.class);
+        RouterLink sampleTypeListView = new RouterLink("Sample Types", SampleTypeListView.class);
+        RouterLink analysisTemplateListView = new RouterLink("Analysis Templates", AnalysisTemplateListView.class);
 
         sampleListView.setHighlightCondition(HighlightConditions.sameLocation());
 
@@ -46,7 +48,9 @@ public class MainLayout extends AppLayout {
                 analysisServiceListView,
                 methodListView,
                 instrumentListView,
-                rejectionReasonListView
+                rejectionReasonListView,
+                sampleTypeListView,
+                analysisTemplateListView
         ));
 
     }
