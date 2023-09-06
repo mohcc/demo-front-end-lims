@@ -11,15 +11,16 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.progressbar.ProgressBar;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import org.hl7.fhir.r4.model.Task;
 import org.springframework.beans.BeanUtils;
+import zw.gov.mohcc.mrs.demofront.lims.dto.ConfirmReceiptDto;
 import zw.gov.mohcc.mrs.demofront.lims.dto.PublishDto;
 import zw.gov.mohcc.mrs.demofront.lims.service.SampleRepository;
 import zw.gov.mohcc.mrs.demofront.lims.service.SampleService;
@@ -49,13 +50,16 @@ public class SampleView extends VerticalLayout implements BeforeEnterObserver {
     private final Button rejectBtn = new Button("Reject");
     private final Button resultBtn = new Button("Add Lab Analysis");
     private final Button publishBtn = new Button("Publish");
-    private final ProgressBar progressBar = new ProgressBar();
+
     private final Span statusSpan = new Span();
 
     private final VerticalLayout sampleViewSection = new VerticalLayout();
+
     private RejectionForm rejectionForm;
     private LabAnalysisForm labAnalysisForm;
     private PublishForm publishForm;
+    private ConfirmReceiptForm confirmReceiptForm;
+
     private final VerticalLayout formSection = new VerticalLayout();
     private final LabAnalysisGrid labAnalysisGrid = new LabAnalysisGrid();
     private final RejectionReasonGrid rejectionReasonGrid = new RejectionReasonGrid();
@@ -99,14 +103,15 @@ public class SampleView extends VerticalLayout implements BeforeEnterObserver {
         configureSampleRejectionForm();
         configureLabAnalyisForm();
         configurePublishForm();
-        formSection.add(rejectionForm, labAnalysisForm, publishForm);
+        configureConfirmReceiptForm();
+        formSection.add(rejectionForm, labAnalysisForm, publishForm, confirmReceiptForm);
         formSection.setWidth("30em");
 
     }
 
     private void configureSampleRejectionForm() {
         List<RejectionReason> rejectionReasons = RejectionReasonRepository.getRejectionReasons();
-        rejectionForm = new RejectionForm(sample, rejectionReasons);
+        rejectionForm = new RejectionForm(rejectionReasons);
         rejectionForm.addSaveListener(this::rejectSample);
         rejectionForm.addCloseListener(e -> closeFormSection());
     }
@@ -130,12 +135,17 @@ public class SampleView extends VerticalLayout implements BeforeEnterObserver {
 
     }
 
+    private void configureConfirmReceiptForm() {
+        confirmReceiptForm = new ConfirmReceiptForm();
+        confirmReceiptForm.addSaveListener(this::confirmReceipt);
+        confirmReceiptForm.addCloseListener(e -> closeFormSection());
+    }
+
     private void closeFormSection() {
         this.formSection.setVisible(false);
     }
 
     private void saveLabAnalysis(LabAnalysisForm.SaveEvent event) {
-        UI ui = UI.getCurrent();
         LabAnalysis labAnalysis = event.getLabAnalysis();
         if (sample.getLabAnalyses() == null) {
             sample.setLabAnalyses(new ArrayList<>());
@@ -164,6 +174,8 @@ public class SampleView extends VerticalLayout implements BeforeEnterObserver {
 
         }).handle((res, ex) -> {
             ui.access(() -> {
+                Notification.show("Failed");
+                updateStateComponents();
                 publishForm.error();
             });
 
@@ -174,7 +186,7 @@ public class SampleView extends VerticalLayout implements BeforeEnterObserver {
 
     private void rejectSample(RejectionForm.SaveEvent event) {
         UI ui = UI.getCurrent();
-        sampleService.rejectOrder(event.getSample(), event.getRejectionReasons()).thenAccept(result -> {
+        sampleService.rejectOrder(sample, event.getRejectionReasons()).thenAccept(result -> {
             ui.access(() -> {
                 showNotification("Sample rejected successfully.");
                 updateStateComponents();
@@ -184,6 +196,8 @@ public class SampleView extends VerticalLayout implements BeforeEnterObserver {
 
         }).handle((res, ex) -> {
             ui.access(() -> {
+                Notification.show("Failed");
+                updateStateComponents();
                 rejectionForm.error();
             });
 
@@ -191,15 +205,43 @@ public class SampleView extends VerticalLayout implements BeforeEnterObserver {
         });
     }
 
+    private void confirmReceipt(ConfirmReceiptForm.SaveEvent event) {
+        UI ui = UI.getCurrent();
+        
+        LocalDateTime dateReceived = event.getConfirmReceiptDto().getDateReceived();
+        LocalDateTime dateReceivedAtHub = event.getConfirmReceiptDto().getDateReceivedAtHub();
+        
+        sampleService.confirmReceipt(sample, dateReceived, dateReceivedAtHub).thenAccept(result -> {
+            ui.access(() -> {
+                showNotification("Receipt of this sample done successfully.");
+                updateStateComponents();
+                confirmReceiptForm.success();
+                closeFormSection();
+            });
+        }).handle((res, ex) -> {
+            ui.access(() -> {
+                Notification.show("Failed to confirm receipt of this sample");
+                updateStateComponents();
+                confirmReceiptForm.error();
+            });
+
+            return res;
+        });
+
+    }
+
     private void configureSampleViewSection() {
-        progressBar.setIndeterminate(true);
-        progressBar.setVisible(false);
         statusSpan.setText(sample.getStatus());
 
         formSection.setVisible(false);
 
         confirmReceiptBtn.addClickListener(click -> {
-            confirmReceipt();
+            formSection.setVisible(true);
+            confirmReceiptForm.setVisible(true);
+            rejectionForm.setVisible(false);
+            labAnalysisForm.setVisible(false);
+            publishForm.setVisible(false);
+            confirmReceiptForm.setConfirmReceiptDto(new ConfirmReceiptDto());
         });
 
         rejectBtn.addClickListener(click -> {
@@ -207,6 +249,7 @@ public class SampleView extends VerticalLayout implements BeforeEnterObserver {
             rejectionForm.setVisible(true);
             labAnalysisForm.setVisible(false);
             publishForm.setVisible(false);
+            confirmReceiptForm.setVisible(false);
             rejectionForm.clearSelectedItems();
         });
 
@@ -215,6 +258,7 @@ public class SampleView extends VerticalLayout implements BeforeEnterObserver {
             labAnalysisForm.setVisible(true);
             publishForm.setVisible(false);
             rejectionForm.setVisible(false);
+            confirmReceiptForm.setVisible(false);
             labAnalysisForm.setLabAnalysis(new LabAnalysis());
         });
 
@@ -223,6 +267,7 @@ public class SampleView extends VerticalLayout implements BeforeEnterObserver {
             publishForm.setVisible(true);
             rejectionForm.setVisible(false);
             labAnalysisForm.setVisible(false);
+            confirmReceiptForm.setVisible(false);
             publishForm.setPublishDto(new PublishDto());
         });
 
@@ -232,7 +277,6 @@ public class SampleView extends VerticalLayout implements BeforeEnterObserver {
         sampleViewSection.add(new H5("Sample type:: " + (sample.getSampleType() != null ? sample.getSampleType().getTitle() : "")));
 
         sampleViewSection.add(statusSpan);
-        sampleViewSection.add(progressBar);
 
         HorizontalLayout actionSection = new HorizontalLayout(
                 confirmReceiptBtn, rejectBtn, resultBtn, publishBtn
@@ -247,36 +291,6 @@ public class SampleView extends VerticalLayout implements BeforeEnterObserver {
         sampleViewSection.add(rejectionReasonGrid);
     }
 
-    private void confirmReceipt() {
-        progressBar.setVisible(true);
-        confirmReceiptBtn.setEnabled(false);
-        UI ui = UI.getCurrent();
-        sampleService.confirmReceipt(sample).thenAccept(result -> {
-            ui.access(() -> {
-                updateStateComponents();
-                afterSuccessfulReceipt();
-
-            });
-        }).handle((res, ex) -> {
-            updateStateComponents();
-            afterFailedReceipt();
-            return res;
-        });
-
-    }
-
-    private void afterSuccessfulReceipt() {
-        showNotification("Receipt of this sample done successfully.");
-        statusSpan.setText(sample.getStatus());
-        progressBar.setVisible(false);
-    }
-
-    private void afterFailedReceipt() {
-        confirmReceiptBtn.setEnabled(sample.getStatus().equalsIgnoreCase(Task.TaskStatus.REQUESTED.name()));
-        progressBar.setVisible(false);
-        Notification.show("Failed to confirm receipt of this sample");
-    }
-
     private void showNotification(String message) {
         Notification notification = new Notification(message);
         notification.setPosition(Notification.Position.MIDDLE);
@@ -289,13 +303,17 @@ public class SampleView extends VerticalLayout implements BeforeEnterObserver {
         boolean hasRejectionReasons = sample.getRejectionReasons() != null && !sample.getRejectionReasons().isEmpty();
         boolean hasLabAnalyses = sample.getLabAnalyses() != null && !sample.getLabAnalyses().isEmpty();
         boolean isReceivedStatus = sample.getStatus().equalsIgnoreCase(Task.TaskStatus.RECEIVED.name());
+        boolean isRequestedStatus = sample.getStatus().equalsIgnoreCase(Task.TaskStatus.REQUESTED.name());
+
         statusSpan.setText(sample.getStatus());
         labAnalysisGrid.setItems(sample.getLabAnalyses());
         rejectionReasonGrid.setItems(sample.getRejectionReasons());
-        confirmReceiptBtn.setEnabled(sample.getStatus().equalsIgnoreCase(Task.TaskStatus.REQUESTED.name()));
+
+        confirmReceiptBtn.setEnabled(isRequestedStatus);
         publishBtn.setEnabled(isReceivedStatus && hasLabAnalyses);
         rejectBtn.setEnabled(isReceivedStatus && !hasLabAnalyses);
         resultBtn.setEnabled(isReceivedStatus);
+
         labAnalysisGrid.setVisible(hasLabAnalyses);
         rejectionReasonGrid.setVisible(hasRejectionReasons);
     }

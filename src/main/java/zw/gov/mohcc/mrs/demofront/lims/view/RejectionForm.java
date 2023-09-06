@@ -17,22 +17,16 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.hl7.fhir.r4.model.Task;
 import zw.gov.mohcc.mrs.fhir.lims.entities.RejectionReason;
-import zw.gov.mohcc.mrs.fhir.lims.entities.Sample;
 
 public class RejectionForm extends VerticalLayout {
-
-    private final Sample sample;
-
+    
     private final MultiSelectListBox<RejectionReason> listBox = new MultiSelectListBox<>();
     private final Button rejectionButton = new Button("Reject Sample");
     private final Button cancelButton = new Button("Cancel");
     private final ProgressBar progressBar = new ProgressBar();
 
-    public RejectionForm(Sample sample, List<RejectionReason> rejectionReasons) {
-
-        this.sample = sample;
+    public RejectionForm(List<RejectionReason> rejectionReasons) {
 
         listBox.setItems(rejectionReasons);
 
@@ -42,12 +36,11 @@ public class RejectionForm extends VerticalLayout {
         progressBar.setVisible(false);
 
         listBox.addSelectionListener((MultiSelectionEvent<MultiSelectListBox<RejectionReason>, RejectionReason> mse) -> {
-            rejectionButton.setEnabled(!listBox.getSelectedItems().isEmpty() && sample.getStatus().equalsIgnoreCase(Task.TaskStatus.RECEIVED.name()));
+            rejectionButton.setEnabled(!listBox.getSelectedItems().isEmpty());
         });
 
-        rejectionButton.setEnabled(!listBox.getSelectedItems().isEmpty() && sample.getStatus().equalsIgnoreCase(Task.TaskStatus.RECEIVED.name()));
-        listBox.setEnabled(sample.getStatus().equalsIgnoreCase(Task.TaskStatus.RECEIVED.name()));
-
+        rejectionButton.setEnabled(!listBox.getSelectedItems().isEmpty());
+        
         add(new H2("Sample Rejection"));
 
         add(new Span("Rejection reasons"));
@@ -67,7 +60,7 @@ public class RejectionForm extends VerticalLayout {
             rejectionButton.setEnabled(false);
             listBox.setEnabled(false);
             Set<RejectionReason> rejectionReasons = listBox.getSelectedItems();
-            fireEvent(new SaveEvent(this, sample, rejectionReasons));
+            fireEvent(new SaveEvent(this, rejectionReasons));
         });
 
         cancelButton.addClickListener(click -> {
@@ -87,45 +80,39 @@ public class RejectionForm extends VerticalLayout {
     }
 
     public void error() {
-        rejectionButton.setEnabled(!listBox.getSelectedItems().isEmpty() && sample.getStatus().equalsIgnoreCase(Task.TaskStatus.RECEIVED.name()));
-        listBox.setEnabled(sample.getStatus().equalsIgnoreCase(Task.TaskStatus.RECEIVED.name()));
+        rejectionButton.setEnabled(!listBox.getSelectedItems().isEmpty());
         progressBar.setVisible(false);
     }
     
     public void clearSelectedItems(){
         listBox.setValue(new HashSet<>());
-        listBox.setEnabled(sample.getStatus().equalsIgnoreCase(Task.TaskStatus.RECEIVED.name()));
     }
 
     // Events
     public static abstract class RejectionFormEvent extends ComponentEvent<RejectionForm> {
 
-        private final Sample sample;
-
-        protected RejectionFormEvent(RejectionForm source, Sample sample) {
-
-            super(source, false);
-            this.sample = sample;
-        }
-
-        public Sample getSample() {
-            return sample;
-        }
-
-    }
-
-    public static class SaveEvent extends RejectionFormEvent {
-
         private final Collection<RejectionReason> rejectionReasons;
 
-        public SaveEvent(RejectionForm source, Sample sample, Collection<RejectionReason> rejectionReasons) {
-            super(source, sample);
+        protected RejectionFormEvent(RejectionForm source, Collection<RejectionReason> rejectionReasons) {
+
+            super(source, false);
             this.rejectionReasons = rejectionReasons;
         }
 
         public Collection<RejectionReason> getRejectionReasons() {
             return rejectionReasons;
         }
+
+        
+
+    }
+
+    public static class SaveEvent extends RejectionFormEvent {
+
+        public SaveEvent(RejectionForm source, Collection<RejectionReason> rejectionReasons) {
+            super(source, rejectionReasons);
+        }
+
 
     }
 

@@ -1,5 +1,6 @@
 package zw.gov.mohcc.mrs.demofront.lims.service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -14,7 +15,6 @@ import zw.gov.mohcc.mrs.fhir.lims.OrderReceiveConfirmer;
 import zw.gov.mohcc.mrs.fhir.lims.OrderRejecter;
 import zw.gov.mohcc.mrs.fhir.lims.OrderResultIssuer;
 import zw.gov.mohcc.mrs.fhir.lims.OrdersRetriever;
-import zw.gov.mohcc.mrs.fhir.lims.entities.LabAnalysis;
 import zw.gov.mohcc.mrs.fhir.lims.entities.RejectionReason;
 import zw.gov.mohcc.mrs.fhir.lims.entities.Sample;
 import zw.gov.mohcc.mrs.fhir.lims.translators.TaskSampleTranslator;
@@ -59,10 +59,12 @@ public class SampleService {
     }
 
     @Async
-    public CompletableFuture<Sample> confirmReceipt(Sample sample) {
+    public CompletableFuture<Sample> confirmReceipt(Sample sample, LocalDateTime dateReceived, LocalDateTime cdateReceivedAtHub) {
         CompletableFuture<Sample> completableFuture = new CompletableFuture<>();
         String taskId = sample.getClientOrderNumber();
         OrderReceiveConfirmer.confirmTaskReceived(taskId);
+        sample.setDateReceived(dateReceived);
+        sample.setDateReceivedAtHub(cdateReceivedAtHub);
         sample.setStatus(WordUtils.capitalizeFully(Task.TaskStatus.RECEIVED.name()));
         completableFuture.complete(sample);
         return completableFuture;
