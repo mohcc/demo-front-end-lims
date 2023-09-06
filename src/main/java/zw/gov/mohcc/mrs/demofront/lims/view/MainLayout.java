@@ -17,7 +17,8 @@ public class MainLayout extends AppLayout {
     }
 
     private void createHeader() {
-        H1 logo = new H1("NMRL LIMS");
+        //https://martinfowler.com/articles/demo-front-end.html
+        H1 logo = new H1("NMRL LIMS Demo Front-End");
         logo.addClassNames("text-l", "m-m");
 
         HorizontalLayout header = new HorizontalLayout(new DrawerToggle(), logo);
