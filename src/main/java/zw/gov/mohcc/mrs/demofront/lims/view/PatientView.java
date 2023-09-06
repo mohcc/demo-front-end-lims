@@ -24,8 +24,11 @@ public class PatientView extends VerticalLayout implements BeforeEnterObserver {
     private void postInitComponents() {
         if (sample != null && patient!=null) {
             add(new H1(patient.getFirstname()+" "+patient.getSurname()));
+            
+            add(new PatientReadOnlyForm(patient));
         } else {
             add(new H1("Patient not found"));
+            
         }
     }
 
