@@ -10,7 +10,7 @@ import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import java.util.Collections;
 import zw.gov.mohcc.mrs.fhir.lims.entities.Client;
-import zw.gov.mohcc.mrs.fhir.lims.entities.Gender;
+import zw.gov.mohcc.mrs.fhir.lims.entities.LimsGender;
 import zw.gov.mohcc.mrs.fhir.lims.entities.LimsPatient;
 import zw.gov.mohcc.mrs.fhir.lims.entities.PatientIdentifier;
 
@@ -22,7 +22,7 @@ public class PatientReadOnlyForm extends FormLayout{
     private final TextField surname=new TextField("Surname");
     private final TextField phoneMobile=new TextField("Phone Mobile");
     private final Checkbox consentToSms=new Checkbox("Consent to Sms");
-    private final ComboBox<Gender> gender=new ComboBox<>("Gender");
+    private final ComboBox<LimsGender> gender=new ComboBox<>("Gender");
     private final Checkbox birthDateMissing=new Checkbox("Birth Date Missing");
     private final Checkbox birthDateEstimated=new Checkbox("Birth Date Estimated");
     private final DatePicker birthDate=new DatePicker("Birth date");
@@ -40,7 +40,7 @@ public class PatientReadOnlyForm extends FormLayout{
         phoneMobile.setReadOnly(true);
         consentToSms.setReadOnly(true);
         gender.setReadOnly(true);
-        gender.setItems(Gender.values());        
+        gender.setItems(LimsGender.values());        
         birthDateMissing.setReadOnly(true);
         birthDateEstimated.setReadOnly(true);
         birthDate.setReadOnly(true);

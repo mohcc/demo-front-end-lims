@@ -32,9 +32,15 @@ public class PatientView extends VerticalLayout implements BeforeEnterObserver {
             add(new H1(patient.getFirstname() + " " + patient.getSurname()));
 
             Table table = new Table();
-            
+
             table.setSizeFull();
 
+            detailsRow = table.addRow();
+            detailsRow.addHeaderCell().setText("Firstname");
+            detailsRow.addDataCell().setText(patient.getFirstname());
+            detailsRow.addHeaderCell().setText("Surname");
+            detailsRow.addDataCell().setText(patient.getSurname());
+                                  
             detailsRow = table.addRow();
             detailsRow.addHeaderCell().setText("Patient");
             detailsRow.addDataCell().setText(patient.getFirstname() + " " + patient.getSurname());
@@ -43,7 +49,7 @@ public class PatientView extends VerticalLayout implements BeforeEnterObserver {
 
             detailsRow = table.addRow();
             detailsRow.addHeaderCell().setText("Gender");
-            detailsRow.addDataCell().setText(patient.getGender() != null ? WordUtils.capitalize(patient.getGender().name()) : "");
+            detailsRow.addDataCell().setText(patient.getGender() != null ? WordUtils.capitalizeFully(patient.getGender().name()) : "");
             detailsRow.addHeaderCell().setText("Date of Birth");
             detailsRow.addDataCell().setText(patient.getBirthDate() != null ? patient.getBirthDate().toString() : "");
 
