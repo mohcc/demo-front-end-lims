@@ -275,7 +275,9 @@ public class SampleView extends VerticalLayout implements BeforeEnterObserver {
         sampleViewSection.add(new H5("Client Sample Id:: " + sample.getClientSampleId()));
         sampleViewSection.add(new H5("Sample template:: " + (sample.getSampleTemplate() != null ? sample.getSampleTemplate().getTitle() : "")));
         sampleViewSection.add(new H5("Sample type:: " + (sample.getSampleType() != null ? sample.getSampleType().getTitle() : "")));
-
+        sampleViewSection.add(new H5("Collection Date:: " + (sample.getDateSampled() != null ? sample.getDateSampled() : "")));
+        sampleViewSection.add(new H5("Registration Date:: " + (sample.getDateRegistered() != null ? sample.getDateRegistered() : "")));
+        sampleViewSection.add(new H5("SHR Date:: " + (sample.getDateShrEntered() != null ? sample.getDateShrEntered() : "")));
         sampleViewSection.add(statusSpan);
 
         HorizontalLayout actionSection = new HorizontalLayout(
