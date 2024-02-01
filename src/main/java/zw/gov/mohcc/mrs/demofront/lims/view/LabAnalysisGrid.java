@@ -29,7 +29,9 @@ public class LabAnalysisGrid extends VerticalLayout {
     private void configureGrid() {
         grid.setColumns(
                 "dueDate",
-                "resultValue");
+                "resultValue",
+                "critical",
+                "interpretationText");
         
         grid.addColumn(labAnalysis -> {
             LabContact analyst = labAnalysis.getAnalyst();

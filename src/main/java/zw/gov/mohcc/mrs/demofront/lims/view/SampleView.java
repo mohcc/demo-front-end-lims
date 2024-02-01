@@ -219,6 +219,7 @@ public class SampleView extends VerticalLayout implements BeforeEnterObserver {
                 closeFormSection();
             });
         }).handle((res, ex) -> {
+           System.out.print(ex);
             ui.access(() -> {
                 Notification.show("Failed to confirm receipt of this sample");
                 updateStateComponents();

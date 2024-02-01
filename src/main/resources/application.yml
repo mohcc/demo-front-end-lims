@@ -3,7 +3,7 @@ server:
   
 openhie:
     shared-health-record:
-        url: https://impilo-openhimcore.mohcc.gov.zw/SHR/fhir/
+        url: https://impilo-openhimcore.mohcc.gov.zw/DSHR/fhir/
         username: lims
         password: extegIbANGLUmedIpEnD
         
