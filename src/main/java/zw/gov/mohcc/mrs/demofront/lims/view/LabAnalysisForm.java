@@ -5,11 +5,13 @@ import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.NumberField;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
@@ -33,6 +35,8 @@ public class LabAnalysisForm extends FormLayout {
     private final ComboBox<LabContact> analyst = new ComboBox<>("Analyst");
     private final ComboBox<LabContact> submitter = new ComboBox<>("Submitter");
     private final ComboBox<LabContact> verifier = new ComboBox<>("Verifier");
+    private final Checkbox critical = new Checkbox("Critical");
+    private final TextField interpretationText = new TextField("Interpretation");
 
     private LabAnalysisDto labAnalysisDto = new LabAnalysisDto();
 
@@ -69,6 +73,8 @@ public class LabAnalysisForm extends FormLayout {
                 analyst,
                 submitter,
                 verifier,
+                critical,
+                interpretationText,
                 createButtonLayout());
 
     }
@@ -83,8 +89,8 @@ public class LabAnalysisForm extends FormLayout {
         save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
 
-        save.addClickListener(event ->  validateAndSave());        
-        cancel.addClickListener(event-> fireEvent(new CloseEvent(this)));
+        save.addClickListener(event -> validateAndSave());
+        cancel.addClickListener(event -> fireEvent(new CloseEvent(this)));
 
         return new HorizontalLayout(save, cancel);
     }

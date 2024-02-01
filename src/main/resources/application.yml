@@ -3,11 +3,12 @@ server:
   
 openhie:
     shared-health-record:
-        url: http://localhost:8090/fhir/
-        username: mohcc-lims
-        password: MiMLS$421^KrL!
+        url: https://impilo-openhimcore.mohcc.gov.zw/SHR/fhir/
+        username: lims
+        password: extegIbANGLUmedIpEnD
         
         
             
         
+#https://impilo-openhimcore.mohcc.gov.zw/SHR/fhir/
 #url:http://197.221.242.150:10343/lims-fhir/
