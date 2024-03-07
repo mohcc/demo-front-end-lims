@@ -3,23 +3,30 @@ package zw.gov.mohcc.mrs.demofront.lims;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import zw.gov.mohcc.mrs.fhir.lims.FhirClientUtility;
+import zw.gov.mohcc.mrs.fhir.lims.CrFhirClientUtility;
+import zw.gov.mohcc.mrs.fhir.lims.ShrFhirClientUtility;
 
 @Component
 public class PostConstructBean {
 
-    @Value("${openhie.shared-health-record.url}")
+    @Value("${hie.shared-health-record.url}")
     private String shrUrl;
-    @Value("${openhie.shared-health-record.username}")
+    @Value("${hie.client-registry.url}")
+    private String crUrl;
+    @Value("${hie.username}")
     private String username;
-    @Value("${openhie.shared-health-record.password}")
+    @Value("${hie.password}")
     private String password;
 
     @PostConstruct
     public void init() {
-        FhirClientUtility.baseUrl = shrUrl;
-        FhirClientUtility.username = username;
-        FhirClientUtility.password = password;
+        ShrFhirClientUtility.baseUrl = shrUrl;
+        ShrFhirClientUtility.username = username;
+        ShrFhirClientUtility.password = password;
+        
+        CrFhirClientUtility.baseUrl = crUrl;
+        CrFhirClientUtility.username = username;
+        CrFhirClientUtility.password = password;
 
     }
 

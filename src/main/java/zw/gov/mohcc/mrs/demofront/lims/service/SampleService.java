@@ -31,7 +31,6 @@ public class SampleService {
         List<Task> fhirTasks = null;
         try {
             fhirTasks = OrdersRetriever.getAllTasks();
-            System.out.println("Finished fetching samples from SHR");
         } catch (Exception ex) {
             System.out.println("Exception when fetching tasks from SHR:: " + ex);
         }

@@ -1,11 +1,14 @@
 server:
   port : 9090
   
-openhie:
+hie:
+    username: lims
+    password: extegIbANGLUmedIpEnD
     shared-health-record:
-        url: https://impilo-openhimcore.mohcc.gov.zw/DSHR/fhir/
-        username: lims
-        password: extegIbANGLUmedIpEnD
+        url: http://197.221.242.150:10343/SHR/fhir/
+    client-registry:
+        url: http://197.221.242.150:10343/CR/fhir/
+        
         
         
             
