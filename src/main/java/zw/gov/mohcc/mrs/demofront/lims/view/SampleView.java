@@ -173,6 +173,7 @@ public class SampleView extends VerticalLayout implements BeforeEnterObserver {
             });
 
         }).handle((res, ex) -> {
+            System.out.println(ex);
             ui.access(() -> {
                 Notification.show("Failed");
                 updateStateComponents();
@@ -195,6 +196,7 @@ public class SampleView extends VerticalLayout implements BeforeEnterObserver {
             });
 
         }).handle((res, ex) -> {
+            System.out.println(ex);
             ui.access(() -> {
                 Notification.show("Failed");
                 updateStateComponents();

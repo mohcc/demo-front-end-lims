@@ -10,7 +10,6 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
@@ -30,7 +29,7 @@ public class LabAnalysisForm extends FormLayout {
     private final ComboBox<AnalysisService> analysis = new ComboBox<>("Analysis");
     private final ComboBox<Instrument> instrument = new ComboBox<>("Instrument");
     private final ComboBox<Method> method = new ComboBox<>("Method");
-    private final NumberField resultValue = new NumberField("Result Value");
+    private final TextField resultValue = new TextField("Result Value");
     private final DatePicker dueDate = new DatePicker("Due Date");
     private final ComboBox<LabContact> analyst = new ComboBox<>("Analyst");
     private final ComboBox<LabContact> submitter = new ComboBox<>("Submitter");

@@ -18,7 +18,7 @@ public class LabAnalysisDto {
     @NotNull
     private AnalysisService analysis;
     @NotNull
-    private Double resultValue;
+    private String resultValue;
     private LocalDate dueDate;
     @NotNull
     private Instrument instrument;
@@ -28,5 +28,7 @@ public class LabAnalysisDto {
     private LabContact analyst;    
     private LabContact submitter;
     private LabContact verifier; //Confirm this!
+    private Boolean critical;
+    private String interpretationText;
 
 }
