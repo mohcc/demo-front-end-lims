@@ -30,7 +30,7 @@ public class SampleService {
         System.out.println("Fetching samples from SHR");
         List<Task> fhirTasks = null;
         try {
-            fhirTasks = OrdersRetriever.getAllTasks();
+            fhirTasks = OrdersRetriever.getRequestedTasks();
         } catch (Exception ex) {
             System.out.println("Exception when fetching tasks from SHR:: " + ex);
         }
