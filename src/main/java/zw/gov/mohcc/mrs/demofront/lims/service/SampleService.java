@@ -28,11 +28,12 @@ public class SampleService {
     @Scheduled(fixedDelay = 5000)
     public void fetchSamples() {
         System.out.println("Fetching samples from SHR");
-        List<Task> fhirTasks = null;
+        List<Task> fhirTasks;
         try {
-            fhirTasks = OrdersRetriever.getRequestedTasks();
+            fhirTasks = OrdersRetriever.getRequestedTasksLastUpdatedDesc();
         } catch (Exception ex) {
             System.out.println("Exception when fetching tasks from SHR:: " + ex);
+            return;
         }
 
         if (fhirTasks != null) {

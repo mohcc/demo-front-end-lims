@@ -3,11 +3,11 @@ server:
   
 hie:
     username: lims
-    password: extegIbANGLUmedIpEnD
+    password: my-lims
     shared-health-record:
-        url: http://197.221.242.150:10343/SHR/fhir/
+        url: https://core-openhim-zhie.mohcc.gov.zw/SHR/fhir/
     client-registry:
-        url: http://197.221.242.150:10343/CR/fhir/
+        url: https://core-openhim-zhie.mohcc.gov.zw/CR/fhir/
         
         
         
