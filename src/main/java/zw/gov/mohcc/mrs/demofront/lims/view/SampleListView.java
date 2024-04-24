@@ -42,7 +42,7 @@ public class SampleListView extends VerticalLayout {
     }
 
     private void updateList() {
-        List<Sample> samples = sampleRepository.getSamples();
+        List<Sample> samples = sampleRepository.getOrderedSamples();
         grid.setItems(samples);
     }
 

@@ -1,6 +1,7 @@
 package zw.gov.mohcc.mrs.demofront.lims.service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -49,9 +50,15 @@ public class SampleRepository {
     public List<Sample> getSamples() {
         return samples;
     }
-    
-    public Optional<Sample> findByClientOrderNumber(String clientOrderNumber){
-         return samples.stream().filter(s -> s.getClientOrderNumber().equals(clientOrderNumber))
+
+    public List<Sample> getOrderedSamples() {
+        List<Sample> orderedSamples = new ArrayList(samples);
+        orderedSamples.sort(Comparator.comparing(Sample::getDateSampled).reversed());
+        return orderedSamples;
+    }
+
+    public Optional<Sample> findByClientOrderNumber(String clientOrderNumber) {
+        return samples.stream().filter(s -> s.getClientOrderNumber().equals(clientOrderNumber))
                 .findFirst();
     }
 
